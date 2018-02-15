@@ -1,37 +1,35 @@
 (ns forca.core
   (:gen-class))
 
-(def limite-vidas 6)
-
-(def acertos #{})
-
 (defn perdeu [] (print "Looooser\n"))
 
 (defn ganhou [] (print "woo woo!! \\o/"))
 
-(defn chuta [] (rand-nth ["A" "E" "I" "O" "U" "B" "C" "L" "R" "J"] ))
+(defn acertou? [chute palavra] (.contains palavra chute))
 
-
-(defn acertou-tudo? [palavra acertos] 
-  (if (= (set palavra) acertos)
-    true
-    (do(
-        (def chute (str chuta))
-        (if (contains? palavra chute)
-          (def acertos (conj acertos chute))
-          (dec limite-vidas)
-        )
-      )
-    )
-  ) 
+(defn letras-faltantes [palavra acertos]
+  (remove (fn [letra] (contains? acertos (str letra))) palavra)
 )
 
-(defn jogo [palavra] 
-  (if  (= limite-vidas 0)
+(defn le-letra! [] (read-line))
+
+(defn avalia-chute [chute vidas palavra acertos]
+  (if (acertou? chute palavra)
+    (jogo vidas palavra (conj acertos chute))
+    (jogo (dec vidas) palavra acertos)
+  )
+)
+
+(defn acertou-todas? [palavra acertos]
+  (empty? (letras-faltantes palavra acertos))
+)
+
+(defn jogo [vidas palavra acertos] 
+  (if  (= vidas 0)
     (perdeu)
-    (if (acertou-tudo? palavra chute acertos)
+    (if (acertou-todas? palavra acertos)
       (ganhou)
-      (jogo palavra)
+      (avalia-chute (le-letra!) vidas palavra acertos)
     )
   )
 )
@@ -40,5 +38,5 @@
   "I don't do a whole lot ... yet."
   [& args]
   (print "Hello, World!")
-  (jogo "ALURA")
+  (jogo 5 "ALURA" #{})
 )
